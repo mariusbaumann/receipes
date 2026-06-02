@@ -1,0 +1,12 @@
+Description: Downloads the latest version of OpenAI Codex.
+Identifier: com.github.marius-baumann.download.Codex
+Input:
+  NAME: Codex
+  DOWNLOAD_URL: https://persistent.oaistatic.com/codex-app-prod/Codex.dmg
+MinimumVersion: '2.3'
+Process:
+  - Processor: URLDownloader
+    Arguments:
+      url: '%DOWNLOAD_URL%'
+      filename: '%NAME%.dmg'
+  - Processor: EndOfCheckPhase

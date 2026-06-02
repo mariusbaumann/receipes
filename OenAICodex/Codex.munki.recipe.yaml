@@ -1,0 +1,21 @@
+Description: Imports OpenAI Codex into Munki.
+Identifier: com.github.marius-baumann.munki.Codex
+ParentRecipe: com.github.marius-baumann.download.Codex
+Input:
+  NAME: Codex
+  MUNKI_REPO_SUBDIR: apps/OpenAI
+MinimumVersion: '2.3'
+Process:
+  - Processor: MunkiImporter
+    Arguments:
+      pkg_path: '%pathname%'
+      repo_subdirectory: '%MUNKI_REPO_SUBDIR%'
+      additional_pkginfo:
+        catalogs:
+          - testing
+        category: Productivity
+        description: OpenAI Codex is an AI coding assistant.
+        developer: OpenAI
+        display_name: Codex
+        name: '%NAME%'
+        unattended_install: true

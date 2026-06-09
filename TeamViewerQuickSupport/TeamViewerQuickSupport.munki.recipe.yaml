@@ -1,0 +1,23 @@
+Description: Imports TeamViewer QuickSupport into Munki.
+Identifier: com.github.marius-baumann.munki.TeamViewerQuickSupport
+ParentRecipe: com.github.marius-baumann.download.TeamViewerQuickSupport
+MinimumVersion: '2.3'
+Input:
+  NAME: TeamViewerQuickSupport
+  MUNKI_REPO_SUBDIR: apps/TeamViewer
+Process:
+  - Processor: MunkiImporter
+    Arguments:
+      pkg_path: '%pathname%/TeamViewerQS.app'
+      repo_subdirectory: '%MUNKI_REPO_SUBDIR%'
+      additional_pkginfo:
+        catalogs:
+          - testing
+        category: Remote Support
+        description: >-
+          TeamViewer QuickSupport allows IT staff to connect to this Mac
+          for remote support without requiring a full TeamViewer installation.
+        developer: TeamViewer
+        display_name: TeamViewer QuickSupport
+        name: '%NAME%'
+        unattended_install: true

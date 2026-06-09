@@ -1,0 +1,29 @@
+Description: |
+  Downloads the latest TeamViewer QuickSupport custom module for a given ConfigId.
+  The ConfigId is extracted from the JavaScript on the download page
+  (e.g. https://get.teamviewer.com/umbag → var configId = "5kte9mc").
+Identifier: com.github.marius-baumann.download.TeamViewerQuickSupport
+MinimumVersion: '2.3'
+Input:
+  NAME: TeamViewerQuickSupport
+  # ConfigId found as `var configId` in the page source of the QuickSupport download URL.
+  TV_CONFIG_ID: 5kte9mc
+  TV_VERSION: '15'
+Process:
+  - Processor: com.github.marius-baumann.download.TeamViewerQuickSupport/TeamViewerQuickSupportURLProvider
+    Arguments:
+      TV_CONFIG_ID: '%TV_CONFIG_ID%'
+      TV_VERSION: '%TV_VERSION%'
+
+  - Processor: URLDownloader
+    Arguments:
+      url: '%url%'
+      filename: TeamViewerQS.zip
+
+  - Processor: Unarchiver
+    Arguments:
+      archive_path: '%pathname%'
+      destination_path: '%RECIPE_CACHE_DIR%/%NAME%'
+      purge_destination: true
+
+  - Processor: EndOfCheckPhase

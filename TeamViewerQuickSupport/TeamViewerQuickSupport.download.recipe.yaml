@@ -19,10 +19,4 @@ Process:
       url: '%url%'
       filename: TeamViewerQS.zip
 
-  - Processor: Unarchiver
-    Arguments:
-      archive_path: '%pathname%'
-      destination_path: '%RECIPE_CACHE_DIR%/%NAME%'
-      purge_destination: true
-
   - Processor: EndOfCheckPhase

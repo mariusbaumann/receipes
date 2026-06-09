@@ -6,9 +6,20 @@ Input:
   NAME: TeamViewerQuickSupport
   MUNKI_REPO_SUBDIR: apps/TeamViewer
 Process:
+  - Processor: Unarchiver
+    Arguments:
+      archive_path: '%pathname%'
+      destination_path: '%RECIPE_CACHE_DIR%/unpack'
+      purge_destination: true
+
+  - Processor: DmgCreator
+    Arguments:
+      dmg_root: '%RECIPE_CACHE_DIR%/unpack'
+      dmg_path: '%RECIPE_CACHE_DIR%/TeamViewerQS.dmg'
+
   - Processor: MunkiImporter
     Arguments:
-      pkg_path: '%pathname%/TeamViewerQS.app'
+      pkg_path: '%RECIPE_CACHE_DIR%/TeamViewerQS.dmg'
       repo_subdirectory: '%MUNKI_REPO_SUBDIR%'
       additional_pkginfo:
         catalogs:

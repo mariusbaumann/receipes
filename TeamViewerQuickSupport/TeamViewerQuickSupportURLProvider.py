@@ -2,7 +2,7 @@
 """AutoPkg processor that retrieves the download URL for a TeamViewer QuickSupport custom module."""
 
 import json
-import urllib.request
+import subprocess
 
 from autopkglib import Processor, ProcessorError
 
@@ -46,20 +46,22 @@ class TeamViewerQuickSupportURLProvider(Processor):
             "IsCustomModule": True,
             "Subdomain": "1",
             "ConnectionId": "",
-        }).encode("utf-8")
+        })
 
-        req = urllib.request.Request(
+        # Use curl instead of urllib so macOS system SSL certificates are used.
+        cmd = [
+            "/usr/bin/curl", "-sL",
+            "-X", "POST",
+            "-H", "Content-Type: application/json; charset=utf-8",
+            "-H", "User-Agent: AutoPkg",
+            "-d", payload,
             API_URL,
-            data=payload,
-            headers={
-                "Content-Type": "application/json; charset=utf-8",
-                "User-Agent": "AutoPkg",
-            },
-        )
-
+        ]
         try:
-            with urllib.request.urlopen(req) as resp:
-                download_url = json.loads(resp.read().decode("utf-8"))
+            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+            download_url = json.loads(result.stdout)
+        except subprocess.CalledProcessError as err:
+            raise ProcessorError(f"Failed to retrieve TeamViewer download URL: {err.stderr}") from err
         except Exception as err:
             raise ProcessorError(f"Failed to retrieve TeamViewer download URL: {err}") from err
 

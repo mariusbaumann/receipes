@@ -1,0 +1,58 @@
+Description: |
+  Downloads the latest Python 3 of the pinned release branch and imports it into Munki.
+
+  The Python Launcher.app is unpacked from the installer only to generate an
+  installs item, so Munki can tell which minor release is actually present. The
+  unpacked payload is deleted again before the import.
+
+  The version has to be set explicitly: every component package inside the
+  python.org installer declares version "0", so makepkginfo would otherwise
+  import every release as version 0 and Munki could not tell them apart.
+Identifier: com.github.marius-baumann.munki.Python3
+ParentRecipe: com.github.marius-baumann.download.Python3
+Input:
+  NAME: Python3
+  MUNKI_REPO_SUBDIR: developer
+  pkginfo:
+    catalogs:
+      - testing
+    description: Python is a programming language that lets you work quickly and integrate systems more effectively.
+    display_name: Python 3
+    name: '%NAME%'
+    unattended_install: true
+MinimumVersion: '2.3'
+Process:
+  - Processor: PkgRootCreator
+    Arguments:
+      pkgroot: '%RECIPE_CACHE_DIR%/payload'
+      pkgdirs:
+        Applications: '0755'
+  - Processor: FlatPkgUnpacker
+    Arguments:
+      flat_pkg_path: '%pathname%'
+      destination_path: '%RECIPE_CACHE_DIR%/unpack'
+  - Processor: PkgPayloadUnpacker
+    Arguments:
+      pkg_payload_path: '%RECIPE_CACHE_DIR%/unpack/Python_Applications.pkg/Payload'
+      destination_path: '%RECIPE_CACHE_DIR%/payload/Applications'
+  - Processor: MunkiInstallsItemsCreator
+    Arguments:
+      faux_root: '%RECIPE_CACHE_DIR%/payload/'
+      installs_item_paths:
+        - '/Applications/Python %PYTHON_BRANCH%/Python Launcher.app'
+  - Processor: PathDeleter
+    Arguments:
+      path_list:
+        - '%RECIPE_CACHE_DIR%/unpack'
+        - '%RECIPE_CACHE_DIR%/payload'
+  - Processor: MunkiPkginfoMerger
+  # Not in the Input pkginfo: Input values are substituted before the download
+  # runs, so %version% is not known yet at that point.
+  - Processor: MunkiPkginfoMerger
+    Arguments:
+      additional_pkginfo:
+        version: '%version%'
+  - Processor: MunkiImporter
+    Arguments:
+      pkg_path: '%pathname%'
+      repo_subdirectory: '%MUNKI_REPO_SUBDIR%'

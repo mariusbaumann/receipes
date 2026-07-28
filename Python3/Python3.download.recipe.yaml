@@ -1,0 +1,31 @@
+Description: |
+  Downloads the latest version of Python 3 from a pinned release branch.
+
+  python.org lists releases on the downloads page sorted by release date, not by
+  version number, and maintains several branches (e.g. 3.13 and 3.14) in parallel.
+  A search for the first "python-3.x.y*.pkg" link therefore returns whichever
+  branch was released last, which flips back and forth over time. Pinning
+  PYTHON_BRANCH makes the result deterministic; override it to move to a new
+  minor release when you are ready for it.
+Identifier: com.github.marius-baumann.download.Python3
+Input:
+  NAME: Python3
+  PYTHON_BRANCH: '3.14'
+MinimumVersion: '2.3'
+Process:
+  - Processor: URLTextSearcher
+    Arguments:
+      url: https://www.python.org/downloads/macos/
+      re_pattern: '(?P<url>https://[^"\s]*/python-(?P<version>%PYTHON_BRANCH%\.\d+)[^"\s]*\.pkg)'
+  - Processor: URLDownloader
+    Arguments:
+      url: '%url%'
+      filename: '%NAME%-%version%.pkg'
+  - Processor: EndOfCheckPhase
+  - Processor: CodeSignatureVerifier
+    Arguments:
+      input_path: '%pathname%'
+      expected_authority_names:
+        - 'Developer ID Installer: Python Software Foundation (BMM5U3QVKW)'
+        - Developer ID Certification Authority
+        - Apple Root CA

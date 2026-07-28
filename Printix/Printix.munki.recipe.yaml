@@ -1,0 +1,23 @@
+Description: Imports the Printix Mac client into Munki.
+Identifier: com.github.marius-baumann.munki.Printix
+ParentRecipe: com.github.marius-baumann.download.Printix
+MinimumVersion: '2.3'
+Input:
+  NAME: Printix
+  MUNKI_REPO_SUBDIR: apps/Printix
+Process:
+  - Processor: MunkiImporter
+    Arguments:
+      pkg_path: '%pathname%'
+      repo_subdirectory: '%MUNKI_REPO_SUBDIR%'
+      additional_pkginfo:
+        catalogs:
+          - testing
+        category: Printing
+        description: >-
+          Printix is a cloud-based print management service. The client enables
+          printing from this Mac via the organisation's Printix tenant.
+        developer: Printix
+        display_name: Printix Client
+        name: '%NAME%'
+        unattended_install: true

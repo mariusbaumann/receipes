@@ -1,0 +1,25 @@
+Description: |
+  Downloads the Printix Mac client for a given tenant.
+
+  PRINTIX_TENANT must be set in a recipe override — it is the subdomain of the
+  tenant's Printix download page (e.g. 'acme' for https://acme.printix.net).
+  It is intentionally left empty here so it never ends up in a public recipe repo.
+Identifier: com.github.marius-baumann.download.Printix
+MinimumVersion: '2.3'
+Input:
+  NAME: Printix
+  # Customer-specific — must be overridden. See Description above.
+  PRINTIX_TENANT: ''
+Process:
+  - Processor: com.github.marius-baumann.download.Printix/PrintixURLProvider
+    Arguments:
+      PRINTIX_TENANT: '%PRINTIX_TENANT%'
+
+  - Processor: URLDownloader
+    Arguments:
+      url: '%url%'
+      filename: PrintixClient.dmg
+      request_headers:
+        Accept: application/octet-stream
+
+  - Processor: EndOfCheckPhase

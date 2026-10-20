@@ -1,0 +1,79 @@
+Description: |
+  Packages the Azure CLI tarball to /usr/local/azure-cli and imports it into Munki.
+
+  /usr/local/bin/az is a wrapper that sets AZ_PYTHON to the python.org framework
+  Python matching the tarball's python3.X site-packages, so no Homebrew is needed.
+  The pkginfo requires the Python3 Munki item.
+Identifier: com.github.marius-baumann.munki.AzureCLI
+ParentRecipe: com.github.marius-baumann.download.AzureCLI
+Input:
+  NAME: AzureCLI
+  MUNKI_REPO_SUBDIR: developer
+  pkginfo:
+    catalogs:
+      - testing
+    description: The Azure command-line interface (az) for managing Azure resources.
+    developer: Microsoft
+    display_name: Azure CLI
+    installable_condition: arch == "arm64"
+    name: '%NAME%'
+    # The tarball has no bytecode; users cannot write it under /usr/local, so
+    # without this every az call recompiles ~13k modules.
+    postinstall_script: |
+      #!/bin/bash
+      site=(/usr/local/azure-cli/libexec/lib/python3.*)
+      v="${site[0]##*/python}"
+      "/Library/Frameworks/Python.framework/Versions/$v/bin/python$v" -m compileall -q "${site[0]}" >/dev/null 2>&1
+      exit 0
+    postuninstall_script: |
+      #!/bin/bash
+      rm -rf /usr/local/azure-cli
+    requires:
+      - Python3
+    unattended_install: true
+MinimumVersion: '2.3'
+Process:
+  - Processor: PkgRootCreator
+    Arguments:
+      pkgroot: '%RECIPE_CACHE_DIR%/pkgroot'
+      pkgdirs:
+        usr: '0755'
+        usr/local: '0755'
+        usr/local/bin: '0755'
+        usr/local/azure-cli: '0755'
+  - Processor: Unarchiver
+    Arguments:
+      archive_path: '%pathname%'
+      destination_path: '%pkgroot%/usr/local/azure-cli'
+      purge_destination: true
+  - Processor: FileCreator
+    Arguments:
+      file_path: '%pkgroot%/usr/local/bin/az'
+      file_mode: '0755'
+      file_content: |
+        #!/bin/bash
+        # Points the tarball launcher at the python.org Python it was built for.
+        site=(/usr/local/azure-cli/libexec/lib/python3.*)
+        v="${site[0]##*/python}"
+        export AZ_PYTHON="${AZ_PYTHON:-/Library/Frameworks/Python.framework/Versions/$v/bin/python$v}"
+        exec /usr/local/azure-cli/bin/az "$@"
+  - Processor: PkgCreator
+    Arguments:
+      pkg_request:
+        pkgname: '%NAME%-%version%'
+        pkgdir: '%RECIPE_CACHE_DIR%'
+        id: ch.umb.pkg.azure-cli
+        version: '%version%'
+        options: purge_ds_store
+        chown:
+          - path: usr
+            user: root
+            group: wheel
+  - Processor: PathDeleter
+    Arguments:
+      path_list:
+        - '%pkgroot%'
+  - Processor: MunkiImporter
+    Arguments:
+      pkg_path: '%pkg_path%'
+      repo_subdirectory: '%MUNKI_REPO_SUBDIR%'

@@ -1,0 +1,41 @@
+Description: |
+  Imports the Microsoft .NET SDK into Munki, one item per architecture.
+
+  Uses the original Microsoft pkgs from com.github.smithjw.download.dotnet
+  instead of the wrapper pkg: both items share NAME and version, Munki picks
+  the right one via supported_architectures.
+Identifier: com.github.marius-baumann.munki.dotnet
+ParentRecipe: com.github.smithjw.download.dotnet
+Input:
+  NAME: dotnet
+  SOFTWARE_TITLE: microsoft_dotnet
+  SDK_VERSION: '10'
+  MUNKI_REPO_SUBDIR: developer
+  pkginfo:
+    catalogs:
+      - testing
+    description: The .NET SDK for building and running .NET applications.
+    developer: Microsoft
+    display_name: Microsoft .NET SDK
+    name: '%NAME%'
+    unattended_install: true
+MinimumVersion: '2.9'
+Process:
+  - Processor: MunkiPkginfoMerger
+    Arguments:
+      additional_pkginfo:
+        supported_architectures:
+          - arm64
+  - Processor: MunkiImporter
+    Arguments:
+      pkg_path: '%RECIPE_CACHE_DIR%/downloads/%SOFTWARE_TITLE%-%SDK_VERSION%-arm64.pkg'
+      repo_subdirectory: '%MUNKI_REPO_SUBDIR%'
+  - Processor: MunkiPkginfoMerger
+    Arguments:
+      additional_pkginfo:
+        supported_architectures:
+          - x86_64
+  - Processor: MunkiImporter
+    Arguments:
+      pkg_path: '%RECIPE_CACHE_DIR%/downloads/%SOFTWARE_TITLE%-%SDK_VERSION%-x86_64.pkg'
+      repo_subdirectory: '%MUNKI_REPO_SUBDIR%'

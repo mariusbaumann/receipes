@@ -1,0 +1,33 @@
+Description: |
+  Downloads the latest DisplayLink Manager pkg from Synaptics.
+
+  Same scraping as com.github.smithjw.download.DisplayLink_Manager, but with
+  URLDownloader: Synaptics serves the pkg chunked without Content-Length, which
+  makes URLDownloaderPython (AutoPkg 2.9) fail before it moves the temp file.
+Identifier: com.github.marius-baumann.download.DisplayLinkManager
+Input:
+  NAME: DisplayLinkManager
+  BASE_URL: https://www.synaptics.com
+  SEARCH_URL: products/displaylink-graphics/downloads/macos
+MinimumVersion: '2.3'
+Process:
+  - Processor: URLTextSearcher
+    Arguments:
+      url: '%BASE_URL%/%SEARCH_URL%'
+      re_pattern: /products/displaylink-.+\?filetype=exe
+  - Processor: URLTextSearcher
+    Arguments:
+      url: '%BASE_URL%%match%'
+      re_pattern: <a.*href="(?P<download_url>.*[.]pkg)" download>Accept<\/a>
+  - Processor: URLDownloader
+    Arguments:
+      url: '%BASE_URL%%download_url%'
+      filename: '%NAME%.pkg'
+  - Processor: EndOfCheckPhase
+  - Processor: CodeSignatureVerifier
+    Arguments:
+      input_path: '%pathname%'
+      expected_authority_names:
+        - 'Developer ID Installer: DisplayLink Corp (73YQY62QM3)'
+        - Developer ID Certification Authority
+        - Apple Root CA

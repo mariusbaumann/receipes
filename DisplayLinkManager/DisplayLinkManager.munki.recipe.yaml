@@ -1,0 +1,52 @@
+Description: |
+  Imports DisplayLink Manager into Munki. Processing steps follow
+  com.github.dataJAR-recipes.munki.DisplayLink Manager.
+Identifier: com.github.marius-baumann.munki.DisplayLinkManager
+ParentRecipe: com.github.marius-baumann.download.DisplayLinkManager
+Input:
+  NAME: DisplayLinkManager
+  MUNKI_REPO_SUBDIR: apps/%NAME%
+  pkginfo:
+    catalogs:
+      - testing
+    developer: DisplayLink
+    display_name: DisplayLink Manager
+    name: '%NAME%'
+    unattended_install: true
+MinimumVersion: '2.3'
+Process:
+  - Processor: FlatPkgUnpacker
+    Arguments:
+      flat_pkg_path: '%pathname%'
+      destination_path: '%RECIPE_CACHE_DIR%/unpacked'
+      purge_destination: true
+  - Processor: PkgPayloadUnpacker
+    Arguments:
+      pkg_payload_path: '%RECIPE_CACHE_DIR%/unpacked/DisplayLinkManagerApp.pkg/Payload'
+      destination_path: '%RECIPE_CACHE_DIR%/%NAME%/Applications'
+      purge_destination: true
+  - Processor: MunkiInstallsItemsCreator
+    Arguments:
+      faux_root: '%RECIPE_CACHE_DIR%/%NAME%'
+      installs_item_paths:
+        - /Applications/DisplayLink Manager.app
+  - Processor: PlistReader
+    Arguments:
+      info_path: '%RECIPE_CACHE_DIR%/%NAME%/Applications/DisplayLink Manager.app/Contents/Info.plist'
+      plist_keys:
+        CFBundleShortVersionString: version
+        LSMinimumSystemVersion: min_os_version
+  - Processor: MunkiPkginfoMerger
+    Arguments:
+      additional_pkginfo:
+        minimum_os_version: '%min_os_version%'
+        version: '%version%'
+  - Processor: MunkiImporter
+    Arguments:
+      pkg_path: '%pathname%'
+      repo_subdirectory: '%MUNKI_REPO_SUBDIR%'
+  - Processor: PathDeleter
+    Arguments:
+      path_list:
+        - '%RECIPE_CACHE_DIR%/%NAME%'
+        - '%RECIPE_CACHE_DIR%/unpacked'

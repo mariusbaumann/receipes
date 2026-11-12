@@ -1,0 +1,12 @@
+Description: Downloads the latest version of Calbrite Profiler.
+Identifier: com.github.marius-baumann.download.CalbriteProfiler
+Input:
+  NAME: CalbriteProfiler
+  DOWNLOAD_URL: https://github.com/LUMESCA/calibrite-profiler-releases/releases/download/v3.1.3/calibrite-PROFILER-3.1.3.dmg
+MinimumVersion: '2.3'
+Process:
+- Processor: URLDownloader
+  Arguments:
+    url: '%DOWNLOAD_URL%'
+    filename: '%NAME%.dmg'
+- Processor: EndOfCheckPhase
